@@ -1,4 +1,4 @@
-﻿namespace LibHive
+﻿namespace LibHive.Cells
 {
    public class HiveCell
    {

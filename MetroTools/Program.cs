@@ -7,8 +7,7 @@ namespace MetroTools
    {
       private static void Main(string[] args)
       {
-         RegistryHive rh = new RegistryHive();
-         rh.ReadFile(@"C:\Users\Thomas\Downloads\settings.dat");
+         RegistryHive rh = new RegistryHive(@"C:\Users\Thomas\Downloads\settings.dat");
 
          Console.WriteLine($"Magic:\t\t{rh.Header.Magic}");
          Console.WriteLine($"Well-written:\t{rh.Header.IsWellWritten}");
@@ -22,6 +21,9 @@ namespace MetroTools
          Console.WriteLine($"Length:\t\t{rh.Header.Length}");
          Console.WriteLine($"Cluster:\t{rh.Header.Cluster}");
          Console.WriteLine($"Filename:\t{rh.Header.FileName}");
+         Console.WriteLine($"Checksum:\t{rh.Header.CheckSum:X8}");
+         Console.WriteLine($"Boot type:\t{rh.Header.BootType}");
+         Console.WriteLine($"Boot recovered:\t{rh.Header.BootRecovered}");
 
          foreach (HiveBin bin in rh.Bins)
          {

@@ -1,75 +1,51 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Text;
+using LibHive.Cells;
+using LibHive.Structures;
 
 namespace LibHive
 {
    public struct HiveHeader
    {
-      internal HiveHeader(HiveHeaderInternal hhi)
-      {
-         unsafe
-         {
-            Magic = new string((sbyte*)hhi.magic, 0, 4, Encoding.ASCII);
-            FileName = new string((sbyte*)hhi.filename, 0, 64, Encoding.Unicode);
-         }
+      private HiveHeaderStructure _hhi;
 
-         IsWellWritten = hhi.sequence_one == hhi.sequence_two;
-         LastModified = DateTime.FromFileTime((long)hhi.timestamp);
-         FormatVersion = new Version((int)hhi.major_version, (int)hhi.minor_version);
-         Type = (HiveHeaderFileType)hhi.type;
+      internal HiveHeader(HiveHeaderStructure hhi)
+      {
+         _hhi = hhi;
          RootCell = new HiveCellIndex(hhi.rootcell);
-         Length = hhi.length;
-         Cluster = hhi.cluster;
       }
 
-      public string Magic { get; set; }
-      public bool IsWellWritten { get; set; }
-      public DateTime LastModified { get; set; }
-      public Version FormatVersion { get; set; }
-      public HiveHeaderFileType Type { get; set; }
+      public unsafe string Magic
+      {
+         get
+         {
+            fixed (byte* magic = _hhi.magic)
+            {
+               return new string((sbyte*)magic, 0, 4, Encoding.ASCII);
+            }
+         }
+      }
+
+      public unsafe string FileName
+      {
+         get
+         {
+            fixed (byte* filename = _hhi.filename)
+            {
+               return new string((sbyte*)filename, 0, 64, Encoding.Unicode);
+            }
+         }
+      }
+
+      public bool IsWellWritten => _hhi.sequence_one == _hhi.sequence_two;
+      public DateTime LastModified => DateTime.FromFileTime((long)_hhi.timestamp);
+      public Version FormatVersion => new Version((int)_hhi.major_version, (int)_hhi.minor_version);
+      public HiveHeaderFileType Type => (HiveHeaderFileType)_hhi.type;
       public HiveCellIndex RootCell { get; set; }
-      public uint Length { get; set; }
-      public uint Cluster { get; set; }
-      public string FileName { get; set; }
-   }
-
-   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
-   internal unsafe struct HiveHeaderInternal
-   {
-      public fixed byte magic [4];
-
-      public uint sequence_one;
-      public uint sequence_two;
-
-      public ulong timestamp;
-
-      public uint major_version;
-      public uint minor_version;
-
-      public uint type;
-      public uint format;
-
-      public uint rootcell;
-
-      public uint length;
-      public uint cluster;
-
-      public fixed byte filename [64];
-   }
-
-   public enum HiveHeaderFileType : uint
-   {
-      Primary = 0,
-      Alternate = 1,
-      Log = 2,
-      External = 3,
-      Max = 4
-   }
-
-   public enum HiveCellIndexType
-   {
-      Stable = 0,
-      Volatile = 1
+      public uint Length => _hhi.length;
+      public uint Cluster => _hhi.cluster;
+      public uint CheckSum => _hhi.checksum;
+      public HiveHeaderBootType BootType => (HiveHeaderBootType)_hhi.boot_type;
+      public bool BootRecovered => _hhi.boot_recover > 0;
    }
 }
